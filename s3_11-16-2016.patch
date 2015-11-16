@@ -1,0 +1,231 @@
+From 026bb1ea77b1504af487c63c7c90e8b8282b3856 Mon Sep 17 00:00:00 2001
+From: Adelbert Silla <Adelbert@Adelberts-MacBook-Pro.local>
+Date: Mon, 16 Nov 2015 19:20:33 +0800
+Subject: [PATCH] Implemented patch. Patch for some plugin bugs and modified
+ error/success messages.
+
+---
+ Functions/CheckLoginCookie.php           |  4 ++--
+ Functions/Prepare_Data_For_Insertion.php | 31 +++++++++++++++++++++----------
+ Functions/Process_Front_End_Forms.php    |  8 ++++----
+ Shortcodes/Insert_Login_Form.php         | 31 +++++++++++++++++--------------
+ Shortcodes/Insert_Register_Form.php      |  2 +-
+ Shortcodes/Insert_Reset_Password.php     |  2 +-
+ 6 files changed, 46 insertions(+), 32 deletions(-)
+
+diff --git a/Functions/CheckLoginCookie.php b/Functions/CheckLoginCookie.php
+index 52876a3..6b9c796 100644
+--- a/Functions/CheckLoginCookie.php
++++ b/Functions/CheckLoginCookie.php
+@@ -16,11 +16,11 @@ $UserAgent = $_SERVER['HTTP_USER_AGENT'];
+ 
+ 
+ if (isset($_COOKIE[$CookieName]) and $TimeStamp < (time() + $LoginTime*60)) {
+-	$UserDB = $wpdb->get_row($wpdb->prepare("SELECT User_Sessioncheck , User_Password FROM $ewd_feup_user_table_name WHERE Username ='%s'", $Username));
++	$UserDB = $wpdb->get_row($wpdb->prepare("SELECT User_ID, User_Sessioncheck , User_Password FROM $ewd_feup_user_table_name WHERE Username ='%s'", $Username));
+ 	$DBSeccheck = $UserDB->User_Sessioncheck;
+ 		
+ 	if (strcmp(sha1($SecCheck . $UserAgent), $DBSeccheck) === 0) {
+-		$User = array('Username' => $Username, 'User_Password' => $UserDB->User_Password);
++		$User = array('Username' => $Username, 'User_Password' => $UserDB->User_Password, 'User_ID' => $UserDB->User_ID);
+ 		return $User;
+ 	}
+ 	else {
+diff --git a/Functions/Prepare_Data_For_Insertion.php b/Functions/Prepare_Data_For_Insertion.php
+index c9d2b08..ec8321b 100644
+--- a/Functions/Prepare_Data_For_Insertion.php
++++ b/Functions/Prepare_Data_For_Insertion.php
+@@ -79,8 +79,8 @@ function Add_Edit_User() {
+ 	if ($_POST['action'] == "Add_User" or $_POST['ewd-feup-action'] == "register") {
+ 		if (empty($_POST['User_Password'])) { $user_update = array("Message_Type" => "Error", "Message" => __("The password entered was too short.", "EWD_FEUP")); return $user_update;}
+ 		$wpdb->get_results($wpdb->prepare("SELECT User_ID FROM $ewd_feup_user_table_name WHERE Username='%s'", $_POST['Username']));
+-		if ($wpdb->num_rows > 0) {$user_update = array("Message_Type" => "Error", "Message" => __("There is already a user with that Username, please select a different one.", "EWD_FEUP")); return $user_update;}
+-		if (strlen($_POST['Username']) < 3) {$user_update = array("Message_Type" => "Error", "Message" => __("Username must be at least 3 characters.", "EWD_FEUP")); return $user_update;}
++		if ($wpdb->num_rows > 0) {$user_update = array("Message_Type" => "Error", "Message" => __("There is already a user with that e-mail address, please select a different one.", "EWD_FEUP")); return $user_update;}
++		//if (strlen($_POST['Username']) < 3) {$user_update = array("Message_Type" => "Error", "Message" => __("Username must be at least 3 characters.", "EWD_FEUP")); return $user_update;}
+ 	}
+ 
+ 	if ($_POST['ewd-feup-action'] != "edit-account") {
+@@ -104,6 +104,12 @@ function Add_Edit_User() {
+ 				unset($Field_Allowed_Values);
+ 			}
+ 		}
++	} else {
++	    $newUser = $wpdb->get_row($wpdb->prepare("SELECT User_ID FROM $ewd_feup_user_table_name WHERE Username='%s'", $_POST['Username']));
++
++	    if ($newUser && $UserCookie['User_ID'] != $newUser->User_ID) {
++	        $error = __("There is already an account with that Email. Please select a different one.", "EWD_FEUP");
++	    }
+ 	}
+ 
+ 	if (!isset($error) and $Validate_Captcha == "Yes") {
+@@ -123,7 +129,7 @@ function Add_Edit_User() {
+ 				$user_update = Add_EWD_FEUP_User_Field($Field['Field_ID'], $User_ID, $Field['Field_Name'], $Field['Field_Value'], $date);
+ 			}
+ 			if ($_POST['ewd-feup-action'] == "register") {
+-				$user_update = __("Your account has been succesfully created.", "EWD_FEUP");
++				$user_update = __("Your account has been succesfully created. Please check your email to confirm account.", "EWD_FEUP");
+ 				if ($Sign_Up_Email == "Yes") {EWD_FEUP_Send_Email($User_Fields, $Additional_Fields_Array, $User_ID);}
+ 				if ($Admin_Email_On_Registration == "Yes") {EWD_FEUP_Send_Admin_Registration_Email($User_Fields, $Additional_Fields_Array, $User_ID);}
+ 				if ($Email_Confirmation != "Yes" and $Admin_Approval != "Yes") {
+@@ -246,9 +252,10 @@ function EWD_FEUP_Send_Email($User_Fields, $Additional_Fields_Array, $User_ID =
+ 		}		
+ 	}
+ 	else {
+-		$headers = 'From: ' . $Admin_Email . "\r\n" .
++		$headers = 'From: ' . get_bloginfo('name') . ' <' . $Admin_Email . ">\r\n" .
+     				'Reply-To: ' . $Admin_Email . "\r\n" .
+-    				'X-Mailer: PHP/' . phpversion();
++    				'X-Mailer: PHP/' . phpversion() . "\r\n" .
++		            'Content-Type: text/html; charset=ISO-8859-1';
+ 		$Mail_Success = mail($User_Email, $Email_Subject , $Message_Body, $headers);
+ 	}
+ }
+@@ -314,9 +321,11 @@ function EWD_FEUP_Send_Admin_Registration_Email($User_Fields, $Additional_Fields
+ 		}		
+ 	}
+ 	else {
+-		$headers = 'From: ' . $Admin_Email . "\r\n" .
++		$headers = 'From: ' . get_bloginfo('name') . ' <' . $Admin_Email . ">\r\n" .
+     				'Reply-To: ' . $Admin_Email . "\r\n" .
+-    				'X-Mailer: PHP/' . phpversion();
++    				'X-Mailer: PHP/' . phpversion() . "\r\n" .
++		            'Content-Type: text/html; charset=ISO-8859-1';
++
+ 		$Mail_Success = mail($Admin_Email, $Email_Subject , $Message_Body, $headers);
+ 	}
+ }
+@@ -388,9 +397,11 @@ function EWD_FEUP_Send_Admin_Approval_Email($User_Fields, $Additional_Fields_Arr
+ 		}		
+ 	}
+ 	else {
+-		$headers = 'From: ' . $Admin_Email . "\r\n" .
+-    				'Reply-To: ' . $Admin_Email . "\r\n" .
+-    				'X-Mailer: PHP/' . phpversion();
++		$headers = 'From: ' . get_bloginfo('name') . ' <' . $Admin_Email . ">\r\n" .
++                    'Reply-To: ' . $Admin_Email . "\r\n" .
++                    'X-Mailer: PHP/' . phpversion() . "\r\n" .
++                    'Content-Type: text/html; charset=ISO-8859-1';
++
+ 		$Mail_Success = mail($User_Email, $Email_Subject , $Message_Body, $headers);
+ 		//echo "Crappy Email Sent";
+ 	}
+diff --git a/Functions/Process_Front_End_Forms.php b/Functions/Process_Front_End_Forms.php
+index 2ccf8fd..25ce8da 100644
+--- a/Functions/Process_Front_End_Forms.php
++++ b/Functions/Process_Front_End_Forms.php
+@@ -152,7 +152,7 @@ function Forgot_Password() {
+ 		
+ 		$message = __("Greetings from ", 'EWD_FEUP').get_bloginfo('name')."\n\n";
+ 		$message .= __("Somebody requested a password reset for you. If this wasn't you, you can ignore this mail.", 'EWD_FEUP')."\n\n";
+-		$message .= __("If you want to reset the password, please visit ", 'EWD_FEUP').site_url()."/".$_POST['ewd-feup-reset-email-url']."?add=". urlencode($User_Email)."&rc=".$resetcode."\n";
++		$message .= __("If you want to reset the password, please visit ", 'EWD_FEUP').site_url()."/".$_POST['ewd-feup-reset-email-url']."&add=". urlencode($User_Email)."&rc=".$resetcode."\n";
+ 		//$message .= __("If the link above doesn't work, go to ", 'EWD_FEUP').site_url()."/".$_POST['ewd-feup-reset-email-url'].__(" and enter your email address and the following code:", 'EWD_FEUP')."\n";
+ 		//$message .= $resetcode;
+ 		//$feup_success = true;
+@@ -169,7 +169,7 @@ function Forgot_Password() {
+ 	{
+ 		//return success message even though operation failed - we don't want 'them' to know which
+ 		// email addresses are used
+-		return __("For completing the password reset procedure, please follow the instructions in your email.", 'EWD_FEUP');
++	    return __("Your email doesn't exist. Click <a href='/sign-up'>here</a> to signup.", 'EWD_FEUP');
+ 	}
+ }
+ 
+@@ -225,7 +225,7 @@ function Confirm_Forgot_Password() {
+ 							$feup_success = true;
+ 
+ 							//return success message
+-							return __("Your password has been successfully changed. You can log in using your new password now.", 'EWD_FEUP');
++							return __("Your password has been successfully changed. You may now <a href='/login'>log in</a> using your new password.", 'EWD_FEUP');
+ 						} else {
+ 							return __("The password reset code you entered was wrong. You need to get a new one before using this function again.", 'EWD_FEUP');
+ 						}
+@@ -265,7 +265,7 @@ function ConfirmUserEmail() {
+ 
+ 	$User_ID = $_GET['User_ID'];
+ 	$Email_Address = $_GET['ConfirmEmail'];
+-	$Confirmation_Code = $_GET['Confirmation_Code'];
++	$Confirmation_Code = $_GET['ConfirmationCode'];
+ 
+ 	$Retrieved_User_ID = $wpdb->get_row($wpdb->prepare("SELECT User_ID FROM $ewd_feup_user_table_name WHERE User_ID=%d AND User_Confirmation_Code=%s", $User_ID, $Confirmation_Code));
+ 	if (isset($Retrieved_User_ID->User_ID)) {
+diff --git a/Shortcodes/Insert_Login_Form.php b/Shortcodes/Insert_Login_Form.php
+index 8314689..31d4a08 100644
+--- a/Shortcodes/Insert_Login_Form.php
++++ b/Shortcodes/Insert_Login_Form.php
+@@ -44,28 +44,31 @@ function Insert_Login_Form($atts) {
+ 
+ 		if ($feup_success and $redirect_page != '#') {FEUPRedirect($redirect_page);}
+ 		
+-		$ReturnString .= "<div id='ewd-feup-login' class='ewd-feup-login-form-div' class='ewd-feup-form-div'>";
+-		if (isset($user_message['Message'])) {$ReturnString .= $user_message['Message'];}
+-		if (strpos($user_message['Message'], "Payment required.") !== false) {$ReturnString .= "</div>"; return $ReturnString;} //Payment required
+-		$ReturnString .= "<form action='#' method='post' id='ewd-feup-login-form' class='pure-form pure-form-aligned feup-pure-form-aligned'>";
++		$ReturnString .= "<div id='ewd-feup-login' class='ewd-feup-form-div'>";
++		if (isset($user_message['Message'])) {$ReturnString .= "<span class='ewd-feup-message " . (!$feup_success ? 'error' : '') . "'>" .$user_message['Message']. "</span>";}
++		$ReturnString .= "<form action='#' method='post' id='ewd-feup-login-form' class='pure-form pure-form-aligned'>";
+ 		$ReturnString .= "<input type='hidden' name='ewd-feup-check' value='" . sha1(md5($Time.$Salt)) . "'>";
+ 		$ReturnString .= "<input type='hidden' name='ewd-feup-time' value='" . $Time . "'>";
+ 		$ReturnString .= "<input type='hidden' name='ewd-feup-action' value='login'>";
+-		$ReturnString .= "<div class='feup-pure-control-group'>";
++		$ReturnString .= "<div class='pure-control-group'>";
+ 		if($Username_Is_Email == "Yes") {
+-			$ReturnString .= "<label for='Username' id='ewd-feup-login-username-div' class='ewd-feup-field-label ewd-feup-login-label'>" . __('Email', 'EWD_FEUP') . ": </label>";
+-			$ReturnString .= "<input type='email' class='ewd-feup-text-input ewd-feup-login-field' name='Username' placeholder='" . __('Email', 'EWD_FEUP') . "...'>";
++			$ReturnString .= "<label for='Username' id='ewd-feup-login-username-div' class='ewd-feup-field-label'>" . __('Email', 'EWD_FEUP') . ": </label>";
++			$ReturnString .= "<input tabindex='1' type='email' class='ewd-feup-text-input' name='Username' placeholder='" . __('username@mydomain.com', 'EWD_FEUP') . "'>";
+ 		} else {
+-		$ReturnString .= "<label for='Username' id='ewd-feup-login-username-div' class='ewd-feup-field-label ewd-feup-login-label'>" . __('Username', 'EWD_FEUP') . ": </label>";
+-		$ReturnString .= "<input type='text' class='ewd-feup-text-input ewd-feup-login-field' name='Username' placeholder='" . __('Username', 'EWD_FEUP') . "...'>";
++		$ReturnString .= "<label for='Username' id='ewd-feup-login-username-div' class='ewd-feup-field-label'>" . __('Username', 'EWD_FEUP') . ": </label>";
++		$ReturnString .= "<input tabindex='1' type='text' class='ewd-feup-text-input' name='Username' placeholder='" . __('Username', 'EWD_FEUP') . "...'>";
+ 		}
+ 		$ReturnString .= "</div>";
+-		$ReturnString .= "<div class='feup-pure-control-group'>";
+-		$ReturnString .= "<label for='Password' id='ewd-feup-login-password-div' class='ewd-feup-field-label ewd-feup-login-label'>" . __('Password', 'EWD_FEUP') . ": </label>";
+-		$ReturnString .= "<input type='password' class='ewd-feup-text-input ewd-feup-login-field' name='User_Password'>";
++		$ReturnString .= "<div class='pure-control-group'>";
++		$ReturnString .= "<label for='Password' id='ewd-feup-login-password-div' class='ewd-feup-field-label'>" . __('Password', 'EWD_FEUP') . ": </label>";
++		$ReturnString .= "<input tabindex='2' type='password' class='ewd-feup-text-input' name='User_Password'>";
+ 		$ReturnString .= "</div>";
+-		$ReturnString .= "<div class='feup-pure-control-group'>";
+-		$ReturnString .= "<label for='Submit'></label><input type='submit' class='ewd-feup-submit ewd-feup-login-submit feup-pure-button feup-pure-button-primary' name='Login_Submit' value='" . $submit_text . "'>";
++		$ReturnString .= "<div class='pure-control-group' style='margin-bottom: 10px;'>";
++		$ReturnString .= "<label class='ewd-feup-field-label'></label>";
++		$ReturnString .= "<a tabindex='4' style='font-size: 14px;' href='/forgot-password'>Forgot your password?</a>";
++		$ReturnString .= "</div>";
++		$ReturnString .= "<div class='pure-control-group'>";
++		$ReturnString .= "<label for='Submit'></label><input tabindex='3' type='submit' class='ewd-feup-submit pure-button pure-button-primary' name='Login_Submit' value='" . $submit_text . "'>";
+ 		$ReturnString .= "</div>";
+ 		$ReturnString .= "</form>";
+ 		$ReturnString .= "</div>";
+diff --git a/Shortcodes/Insert_Register_Form.php b/Shortcodes/Insert_Register_Form.php
+index b8d5c2a..736c435 100644
+--- a/Shortcodes/Insert_Register_Form.php
++++ b/Shortcodes/Insert_Register_Form.php
+@@ -155,7 +155,7 @@ function Insert_Register_Form($atts) {
+ 	}
+ 	else {
+ 		$ReturnString = "<div class='ewd-feup-email-confirmation'>";
+-		if ($ConfirmationSuccess == "Yes") {$ReturnString .= __("Thanks for confirming your e-mail address!", 'EWD_FEUP');}
++		if ($ConfirmationSuccess == "Yes") {$ReturnString .= __("Thanks for confirming your e-mail address! You may <a href='/login'>login</a> now.", 'EWD_FEUP');}
+ 		if ($ConfirmationSuccess == "No") {$ReturnString .= __("The confirmation number provided was incorrect. Please contact the site administrator for assistance.", 'EWD_FEUP');}
+ 		$ReturnString .= "</div>";
+ 	}
+diff --git a/Shortcodes/Insert_Reset_Password.php b/Shortcodes/Insert_Reset_Password.php
+index ba3024a..ee4d71a 100644
+--- a/Shortcodes/Insert_Reset_Password.php
++++ b/Shortcodes/Insert_Reset_Password.php
+@@ -38,7 +38,7 @@ function Insert_Reset_Password_Form($atts) {
+ 		
+ 	$ReturnString .= "<div id='ewd-feup-edit-profile-form-div' class='ewd-feup-form-div'>";
+ 	if (isset($user_message['Message'])) {$ReturnString .= $user_message['Message'];}
+-	$ReturnString .= "<form action='#' method='post' id='ewd-feup-edit-profile-form' class='feup-pure-form feup-pure-form-aligned'>";
++	$ReturnString .= "<form action='#' method='post' id='ewd-feup-edit-profile-form' class='pure-form pure-form-aligned'>";
+ 	$ReturnString .= "<input type='hidden' name='ewd-feup-check' value='" . sha1(md5($Time.$Salt)) . "'>";
+ 	$ReturnString .= "<input type='hidden' name='ewd-feup-time' value='" . $Time . "'>";
+ 	$ReturnString .= "<input type='hidden' name='ewd-feup-action' value='edit-account'>";
+-- 
+2.4.9 (Apple Git-60)
+
