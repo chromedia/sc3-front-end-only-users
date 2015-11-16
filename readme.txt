@@ -7,7 +7,7 @@ Tested up to: 4.3.1
 License: GPLv3
 License URI:http://www.gnu.org/licenses/gpl-3.0.html
 
-A customizable plugin for membership sites. Uses shortcodes for registration, login, payment, etc. and only allows access to the front-end of your site.
+A customizable plugin for membership sites. Use shortcodes for registration, login, payment, etc. and only allows access to the front-end of your site.
 
 == Description ==
 
@@ -204,13 +204,22 @@ Tutorial Part 2
 
 == Screenshots ==
 
-1. Sample registration page
-2. Example of the edit profile page
-3. Page showing user data
-4. Example of a restricted page
-5. The admin area
+1. Simple registration page with custom user fields
+2. Restricted page with content preview
+3. Sample user listing page showing all users who specified their "Gender" as "Male" displayed
+4. User search page where visitors can search for users with a specific first name
+5. Forgot password first page in two-step confirmation process
+6. The "Dashboard" admin screen showing recent user activity
+7. The "Statistics" overview admin screen, showing most visited content and recent user activity
+8. The "Payments" admin screen, showing recent payments, amount paid, next payment date and discount code used
+9. The "Payment" secion of the "Options" admin screen, showing the customizable options
+10. The "Basic" section of the "Options" admin screen
 
 == Changelog == 
+= 2.4.4 =
+- Fixed a few bugs with the user-search and user-listing shortcodes
+- Several minor changes
+
 = 2.4.3 =
 - Minor css update
 

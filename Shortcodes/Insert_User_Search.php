@@ -16,6 +16,8 @@ function User_Search($atts, $content = null) {
 					 	'login_necessary' => 'Yes',
 						'submit_text' => 'Search Users',
 						'search_fields' => '',
+						'display_field' => 'Username',
+						'search_logic' => 'OR',
 						'user_profile_page' => ''),
 						$atts
 				)
@@ -37,16 +39,17 @@ function User_Search($atts, $content = null) {
 		}
 		
 		if ($_POST['ewd-feup-action'] == "user-search") {
-			  $Users = Get_User_Search_Results();
+			  $Users = Get_User_Search_Results($search_logic, $display_field);
 				
 				$ReturnString .= "<div class='ewd-feup-user-list-result'>";
+				$ReturnString .= "<h3>" . $display_field . "</h3>";
 				foreach ($Users as $User) {
 						$ReturnString .= "<div class='ewd-feup-user'>";
-						foreach ($User as $FieldName => $ReturnField) {
-								$ReturnString .= "<div class='ewd-feup-user-field'>";
-								$ReturnString .= $FieldName . ": " . $ReturnField;
-								$ReturnString .= "</div>";
-						}
+						$ReturnString .= "<div class='ewd-feup-user-field'>";
+						if ($user_profile_page != "") {$ReturnString .= "<a href='" . $user_profile_page . "?User_ID=" . $User['User_ID'] . "'>";}
+						$ReturnString .= $User[$display_field];
+						if ($user_profile_page != "") {$ReturnString .= "</a>";}
+						$ReturnString .= "</div>";
 						$ReturnString .= "</div>";
 				}
 				$ReturnString .= "</div>";

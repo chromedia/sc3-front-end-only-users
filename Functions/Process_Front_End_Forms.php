@@ -153,8 +153,8 @@ function Forgot_Password() {
 		$message = __("Greetings from ", 'EWD_FEUP').get_bloginfo('name')."\n\n";
 		$message .= __("Somebody requested a password reset for you. If this wasn't you, you can ignore this mail.", 'EWD_FEUP')."\n\n";
 		$message .= __("If you want to reset the password, please visit ", 'EWD_FEUP').site_url()."/".$_POST['ewd-feup-reset-email-url']."?add=". urlencode($User_Email)."&rc=".$resetcode."\n";
-		$message .= __("If the link above doesn't work, go to ", 'EWD_FEUP').site_url()."/".$_POST['ewd-feup-reset-email-url'].__(" and enter your email address and the following code:", 'EWD_FEUP')."\n";
-		$message .= $resetcode;
+		//$message .= __("If the link above doesn't work, go to ", 'EWD_FEUP').site_url()."/".$_POST['ewd-feup-reset-email-url'].__(" and enter your email address and the following code:", 'EWD_FEUP')."\n";
+		//$message .= $resetcode;
 		//$feup_success = true;
 		//return($User_Email."\n". $subject."\n". $message."\n". $headers);
 		
@@ -322,7 +322,8 @@ function Get_User_Search_Results($search_logic, $display_field) {
 	foreach ($UserIDs as $UserID) {
 		if ($display_field == "Username") {$User = $wpdb->get_row($wpdb->prepare("SELECT Username FROM $ewd_feup_user_table_name WHERE User_ID='%d'", $UserID));}
 		else {$User = $wpdb->get_row($wpdb->prepare("SELECT field_value FROM $ewd_feup_user_fields_table_name WHERE User_ID='%d' and field_name=%s", $UserID, $display_field));}
-		$UserInformation[$display_field] = $User->field_value;
+		if ($display_field == "Username"){$UserInformation[$display_field] = $User->Username;}
+		else {$UserInformation[$display_field] = $User->field_value;}
 		$UserInformation['User_ID'] = $UserID;
 		$Users[] = $UserInformation;
 		unset($UserInformation);
