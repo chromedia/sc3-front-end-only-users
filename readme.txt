@@ -216,6 +216,9 @@ Tutorial Part 2
 10. The "Basic" section of the "Options" admin screen
 
 == Changelog == 
+= 2.4.5 =
+- Minor CSS update
+
 = 2.4.4 =
 - Fixed a few bugs with the user-search and user-listing shortcodes
 - Several minor changes

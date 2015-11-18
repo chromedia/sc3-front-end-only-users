@@ -16,11 +16,11 @@ $UserAgent = $_SERVER['HTTP_USER_AGENT'];
 
 
 if (isset($_COOKIE[$CookieName]) and $TimeStamp < (time() + $LoginTime*60)) {
-	$UserDB = $wpdb->get_row($wpdb->prepare("SELECT User_ID, User_Sessioncheck , User_Password FROM $ewd_feup_user_table_name WHERE Username ='%s'", $Username));
+	$UserDB = $wpdb->get_row($wpdb->prepare("SELECT User_Sessioncheck , User_Password FROM $ewd_feup_user_table_name WHERE Username ='%s'", $Username));
 	$DBSeccheck = $UserDB->User_Sessioncheck;
 		
 	if (strcmp(sha1($SecCheck . $UserAgent), $DBSeccheck) === 0) {
-		$User = array('Username' => $Username, 'User_Password' => $UserDB->User_Password, 'User_ID' => $UserDB->User_ID);
+		$User = array('Username' => $Username, 'User_Password' => $UserDB->User_Password);
 		return $User;
 	}
 	else {
