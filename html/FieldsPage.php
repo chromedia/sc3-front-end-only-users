@@ -12,11 +12,11 @@
 			$Sql = "SELECT * FROM $ewd_feup_fields_table_name ";
 				if (isset($_GET['OrderBy']) and $_GET['DisplayPage'] == "Fields") {$Sql .= "ORDER BY " . $_GET['OrderBy'] . " " . $_GET['Order'] . " ";}
 				else {$Sql .= "ORDER BY Field_Order ";}
-				$Sql .= "LIMIT " . ($Page - 1)*20 . ",20";
+				$Sql .= "LIMIT " . ($Page - 1)*200 . ",200";
 				$myrows = $wpdb->get_results($Sql);
 				$TotalFields = $wpdb->get_results("SELECT Field_ID FROM $ewd_feup_fields_table_name");
 				$num_rows = $wpdb->num_rows; 
-				$Number_of_Pages = ceil($num_rows/20);
+				$Number_of_Pages = ceil($num_rows/200);
 				$Current_Page_With_Order_By = "admin.php?page=EWD-FEUP-options&DisplayPage=Fields";
 				if (isset($_GET['OrderBy'])) {$Current_Page_With_Order_By .= "&OrderBy=" .$_GET['OrderBy'] . "&Order=" . $_GET['Order'];}?>
 

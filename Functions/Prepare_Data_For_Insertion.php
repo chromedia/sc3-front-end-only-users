@@ -180,77 +180,30 @@ function EWD_FEUP_Send_Email($User_Fields, $Additional_Fields_Array, $User_ID = 
 
 	$Email_Confirmation = get_option("EWD_FEUP_Email_Confirmation");
 	
-	$key = 'EWD_FEUP';
-	if (function_exists('mcrypt_decrypt')) {$Admin_Password = rtrim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, md5($key), base64_decode($Encrypted_Admin_Password), MCRYPT_MODE_CBC, md5(md5($key))), "\0");}
-	else {$Admin_Password = $Encrypted_Admin_Password;}
-	
-	if ($Email_Confirmation == "Yes") {
-		$Confirmation_Code = EWD_FEUP_RandomString();
-		$PageLink = get_permalink($_POST['ewd-feup-post-id']);
-		if (strpos($PageLink, "?") !== false) {
-			$ConfirmationLink = $PageLink . "&ConfirmEmail=true&User_ID=" . $User_ID . "&ConfirmationCode=" . $Confirmation_Code;
-		}
-		else {
-			$ConfirmationLink = $PageLink . "?ConfirmEmail=true&User_ID=" . $User_ID . "&ConfirmationCode=" . $Confirmation_Code;
-		}
-		$wpdb->query($wpdb->prepare("UPDATE $ewd_feup_user_table_name SET User_Confirmation_Code=%s WHERE User_ID=%d", $Confirmation_Code, $User_ID));
+	$Confirmation_Code = EWD_FEUP_RandomString();
+	$PageLink = get_permalink($_POST['ewd-feup-post-id']);
+	if (strpos($PageLink, "?") !== false) {
+		$ConfirmationLink = $PageLink . "&ConfirmEmail=true&User_ID=" . $User_ID . "&ConfirmationCode=" . $Confirmation_Code;
 	}
+	else {
+		$ConfirmationLink = $PageLink . "?ConfirmEmail=true&User_ID=" . $User_ID . "&ConfirmationCode=" . $Confirmation_Code;
+	}
+	$wpdb->query($wpdb->prepare("UPDATE $ewd_feup_user_table_name SET User_Confirmation_Code=%s WHERE User_ID=%d", $Confirmation_Code, $User_ID));
 
 	$Message_Body = str_replace("[username]", $User_Fields['Username'], $Message_Body);
 	$Message_Body = str_replace("[password]", $_POST['User_Password'], $Message_Body);
 	$Message_Body = str_replace("[join-date]", $User_Fields['User_Date_Created'], $Message_Body);
-	if ($Email_Confirmation == "Yes") {$Message_Body = str_replace("[confirmation-link]", $ConfirmationLink, $Message_Body);}
+	$Message_Body = str_replace("[confirmation-link]", $ConfirmationLink, $Message_Body);
 	
 	$Email_Field = str_replace(" ", "_", $Email_Field);
-	if($Username_Is_Email == "Yes") {
+	if ($Username_Is_Email == "Yes") {
 		$User_Email = $User_Fields['Username'];
 	} else {
-	$User_Email = $Additional_Fields_Array[$Email_Field]['Field_Value'];
+		$User_Email = $Additional_Fields_Array[$Email_Field]['Field_Value'];
 	}
 	
-	if ($SMTP_Mail_Server != "") {
-		require_once(EWD_FEUP_CD_PLUGIN_PATH . '/PHPMailer/class.phpmailer.php');
-		$mail = new PHPMailer(true);
-		try {
-  			$mail->CharSet = 'UTF-8';
-			if ($Use_SMTP != "No") {
-					$mail->IsSMTP();
-					$mail->SMTPAuth = true;
-					$mail->Username = $Username;
-  					$mail->Password = $Admin_Password; 
-				}
-  			$mail->Host = $SMTP_Mail_Server;
-  			$mail->Username = $SMTP_Username == "" ? $Admin_Email : $SMTP_Username;
-  			$mail->Password = $Admin_Password;
-  			$mail->Port = $Port;
-  			$mail->WordWrap = 0;
-  			$mail->AddCustomHeader('X-Mailer: EWD_FEUP v1.0');
-  			$mail->SetFrom($Admin_Email);
-  			$mail->AddAddress($User_Email);
-  			$mail->Subject = $Email_Subject;
-			$mail->Body = $Message_Body;
-			$mail->isHTML(true);
-  			//$mail->AltBody = $Text;
-  			if (!$mail->Send()) {
-				//echo "Email not sent.<br>";
-    			//echo $mail->ErrorInfo;
-  			} else {
-    	 		//echo "Email sent.<br>";
-  			}
-		} catch (phpmailerException $e) {
-    		//echo "FAIL:\n";
-    		//echo $e->errorMessage(); // from PHPMailer
-		} catch (Exception $e) {
-    		//echo "FAIL:\n";
-    		//echo $e->getMessage(); // from anything else!
-		}		
-	}
-	else {
-		$headers = 'From: ' . $Admin_Email . "\r\n" .
-    				'Reply-To: ' . $Admin_Email . "\r\n" .
-    				'X-Mailer: PHP/' . phpversion();
-		$Mail_Success = mail($User_Email, $Email_Subject , $Message_Body, $headers);
-	}
+	$headers = array('Content-Type: text/html; charset=UTF-8');
+	$Mail_Success = wp_mail($User_Email, $Email_Subject, $Message_Body, $headers);
 }
 
 function EWD_FEUP_Send_Admin_Registration_Email($User_Fields, $Additional_Fields_Array, $User_ID) {
@@ -263,10 +216,6 @@ function EWD_FEUP_Send_Admin_Registration_Email($User_Fields, $Additional_Fields
 	$SMTP_Username = get_option("EWD_FEUP_SMTP_Username", "");
 
 	$Admin_Approval = get_option("EWD_FEUP_Admin_Approval");
-	
-	$key = 'EWD_FEUP';
-	if (function_exists('mcrypt_decrypt')) {$Admin_Password = rtrim(mcrypt_decrypt(MCRYPT_RIJNDAEL_256, md5($key), base64_decode($Encrypted_Admin_Password), MCRYPT_MODE_CBC, md5(md5($key))), "\0");}
-	else {$Admin_Password = $Encrypted_Admin_Password;}
 
 	$Email_Subject = "New FEUP User Registration";
 	$Message_Body = "Hello Administrator, \n\r";
@@ -276,49 +225,8 @@ function EWD_FEUP_Send_Admin_Registration_Email($User_Fields, $Additional_Fields
 	if ($Admin_Approval == "Yes") {$Message_Body .= "Your site currently requires admin approval of users, therefore you will need to approve this user before they are able to log in.\n\r";}
 	$Message_Body .= "Thanks for using the Front-End Only Users plugin!\n\r";
 	
-	if ($SMTP_Mail_Server != "") {
-		require_once(EWD_FEUP_CD_PLUGIN_PATH . '/PHPMailer/class.phpmailer.php');
-		$mail = new PHPMailer(true);
-		try {
-  			$mail->CharSet = 'UTF-8';
-			if ($Use_SMTP != "No") {
-					$mail->IsSMTP();
-					$mail->SMTPAuth = true;
-					$mail->Username = $Username;
-  					$mail->Password = $Admin_Password; 
-				}
-  			$mail->Host = $SMTP_Mail_Server;
-  			$mail->Username = $SMTP_Username == "" ? $Admin_Email : $SMTP_Username;
-  			$mail->Password = $Admin_Password;
-  			$mail->Port = $Port;
-  			$mail->WordWrap = 0;
-  			$mail->AddCustomHeader('X-Mailer: EWD_FEUP v1.0');
-  			$mail->SetFrom($Admin_Email);
-  			$mail->AddAddress($Admin_Email);
-  			$mail->Subject = $Email_Subject;
-			$mail->Body = $Message_Body;
-			$mail->isHTML(true);
-  			//$mail->AltBody = $Text;
-  			if (!$mail->Send()) {
-				//echo "Email not sent.<br>";
-    			//echo $mail->ErrorInfo;
-  			} else {
-    	 		//echo "Email sent.<br>";
-  			}
-		} catch (phpmailerException $e) {
-    		//echo "FAIL:\n";
-    		//echo $e->errorMessage(); // from PHPMailer
-		} catch (Exception $e) {
-    		//echo "FAIL:\n";
-    		//echo $e->getMessage(); // from anything else!
-		}		
-	}
-	else {
-		$headers = 'From: ' . $Admin_Email . "\r\n" .
-    				'Reply-To: ' . $Admin_Email . "\r\n" .
-    				'X-Mailer: PHP/' . phpversion();
-		$Mail_Success = mail($Admin_Email, $Email_Subject , $Message_Body, $headers);
-	}
+	$headers = array('Content-Type: text/html; charset=UTF-8');
+	$Mail_Success = wp_mail($Admin_Email, $Email_Subject, $Message_Body, $headers);
 }
 
 function EWD_FEUP_Send_Admin_Approval_Email($User_Fields, $Additional_Fields_Array, $User_ID = 0) {
@@ -350,50 +258,8 @@ function EWD_FEUP_Send_Admin_Approval_Email($User_Fields, $Additional_Fields_Arr
 		$User_Email = $Additional_Fields_Array[$Email_Field]['Field_Value'];
 	}
 	
-	if ($SMTP_Mail_Server != "") {
-		require_once(EWD_FEUP_CD_PLUGIN_PATH . '/PHPMailer/class.phpmailer.php');
-		$mail = new PHPMailer(true);
-		try {
-  			$mail->CharSet = 'UTF-8';
-			if ($Use_SMTP != "No") {
-					$mail->IsSMTP();
-					$mail->SMTPAuth = true;
-					$mail->Username = $Username;
-  					$mail->Password = $Admin_Password; 
-				}
-  			$mail->Host = $SMTP_Mail_Server;
-  			$mail->Username = $SMTP_Username == "" ? $Admin_Email : $SMTP_Username;
-  			$mail->Password = $Admin_Password;
-  			$mail->Port = $Port;
-  			$mail->WordWrap = 0;
-  			$mail->AddCustomHeader('X-Mailer: EWD_FEUP v1.0');
-  			$mail->SetFrom($Admin_Email);
-  			$mail->AddAddress($User_Email);
-  			$mail->Subject = $Email_Subject;
-			$mail->Body = $Message_Body;
-			$mail->isHTML(true);
-  			//$mail->AltBody = $Text;
-  			if (!$mail->Send()) {
-				//echo "Email not sent.<br>";
-    			//echo $mail->ErrorInfo;
-  			} else {
-    	 		//echo "Email sent.<br>";
-  			}
-		} catch (phpmailerException $e) {
-    		//echo "FAIL:\n";
-    		//echo $e->errorMessage(); // from PHPMailer
-		} catch (Exception $e) {
-    		//echo "FAIL:\n";
-    		//echo $e->getMessage(); // from anything else!
-		}		
-	}
-	else {
-		$headers = 'From: ' . $Admin_Email . "\r\n" .
-    				'Reply-To: ' . $Admin_Email . "\r\n" .
-    				'X-Mailer: PHP/' . phpversion();
-		$Mail_Success = mail($User_Email, $Email_Subject , $Message_Body, $headers);
-		//echo "Crappy Email Sent";
-	}
+	$headers = array('Content-Type: text/html; charset=UTF-8');
+	$Mail_Success = wp_mail($User_Email, $Email_Subject, $Message_Body, $headers);
 }
 
 /* Prepare the data to add multiple users from a spreadsheet */

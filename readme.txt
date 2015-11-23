@@ -1,7 +1,7 @@
 === Front-End Only Users ===
 Contributors: Rustaurius, EtoileWebDesign
 Donate link: http://www.etoilewebdesign.com/plugin-donations/
-Tags: membership, paid membership, WordPress members, user management, shortcodes, market segmentation, personalization, front-end users, custom field registration, custom redirects, custom registration, custom registration page, custom user profile, customize profile, edit profile, front-end edit profile, front-end login, front-end register, front-end registration, front-end user listing, front-end user registration, profile builder, user listing, user login, user profile, user profile page, User Registration, user registration form, user-fields, password, profile, email, custom fields, premium content, statistics, analytics, widget, widgets, PayPal
+Tags: membership, paid membership, WordPress members, user management, shortcodes, market segmentation, personalization, front-end users, custom field registration, custom redirects, custom registration, custom registration page, custom user profile, customize profile, edit profile, front-end edit profile, front-end login, front-end register, front-end registration, front-end user listing, front-end user registration, profile builder, user listing, user login, user profile, user profile page, User Registration, user registration form, user-fields, password, profile, email, custom fields, premium content, statistics, analytics, widget, widgets, PayPal, monetize
 Requires at least: 3.5.0
 Tested up to: 4.3.1
 License: GPLv3
@@ -17,7 +17,7 @@ This plugin allows admins to restrict access to portions of their websites. Visi
 
 Front-end users is completely customizable using CSS and is easily personalized. The shortcodes can be used to insert registration, login, profile editing and many more forms on any page of your website and to restrict content. Users are created in separate tables so that they have no access to the back-end of your site. Create different fields for members to fill out and customize content based on their profiles. Customize forms with CSS to suit your needs using the Admin panel.
 
-Includes paid membership and user level features to restrict different portions of your site to different user groups (those you have signed up, those who have paid, etc.).
+Includes paid membership and user level features to restrict different portions of your site to different user groups (those you have signed up, those who have paid, etc.) - makes it easy monetize your content and segment your users! Type any shortcode name and help (ex:[login help) in any WordPress page to get a complete list of the shortcode's attributes.
  
 Ideal for paid content, membership, dating sites and more!
 
@@ -97,6 +97,7 @@ Tutorial Part 2
 * Register Form: [register]
 * Login Form: [login]
 * Logout Form:[logout]
+* Toggle:[login-logout-toggle]
 * Edit Profile Form: [edit-profile]
 * Edit Account Information: [account-details]
 * Restricted Content: [restricted][/restricted]
@@ -106,6 +107,9 @@ Tutorial Part 2
 * User Profile: [user-profile]
 * Forgot Password: [forgot-password]
 * Confirm Forgot Password: [confirm-forgot-password]
+
+Type the shortcode name and help (ex:[login help) in any WordPress page to get a complete list of the shortcode's attributes.
+
 = How do I add fields for my users to fill out? =
 
 On the admin page, go to the "Fields" tab.
@@ -215,7 +219,20 @@ Tutorial Part 2
 9. The "Payment" secion of the "Options" admin screen, showing the customizable options
 10. The "Basic" section of the "Options" admin screen
 
-== Changelog == 
+== Changelog ==
+= 2.4.8 =
+- Tweaked how email confirmation links get added
+
+= 2.4.7 =
+- Removed pagination on the "Fields" tab, so that fields can be ordered no matter how many there are
+
+= 2.4.6 =
+- Warning! Complete overhaul of the e-mails system for order updates. IMPORTANT - If you're using the plugin in production, the plugin is switching from native SMTP e-mailing to using the pluggable wp_mail function, which means that options can now be set using a third party plugin (ex: https://wordpress.org/plugins/wp-mail-smtp/)
+- Added a help function for the shortcodes. Type the shortcode name and help (ex:[login help) in any WordPress page to get a complete list of the shortcode's attributes.
+
+= 2.4.5 =
+- Minor CSS update
+
 = 2.4.4 =
 - Fixed a few bugs with the user-search and user-listing shortcodes
 - Several minor changes

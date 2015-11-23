@@ -34,7 +34,7 @@
 					<?php } else { ?><ul><li><?php _e("Thanks for upgrading to version 2.4.21!", "EWD_FEUP"); ?><br> <a href='https://www.youtube.com/channel/UCZPuaoetCJB1vZOmpnMxJNw'><?php _e("Subscribe to our YouTube channel ", "EWD_FEUP"); ?></a> <?php _e("for tutorial videos on this and our other plugins!", "EWD_FEUP");?> </li></ul><?php } */ ?>
 					
 					<?php  if (get_option("EWD_FEUP_Install_Flag") == "Yes") { ?><ul><li><?php _e("Thanks for installing Front-End Only Users.", "EWD_FEUP"); ?><br> <a href='http://www.facebook.com/EtoileWebDesign'><?php _e("Follow us on Facebook", "EWD_FEUP"); ?></a> <?php _e("to suggest new features or hear about upcoming ones!", "EWD_FEUP");?> </li></ul>
-					<?php } else { ?><ul><li><?php _e("Thanks for upgrading to version 2.4.4!", "EWD_FEUP"); ?><br> <a href='http://www.facebook.com/EtoileWebDesign'><?php _e("Follow us on Facebook", "EWD_FEUP"); ?></a> <?php _e("to suggest new features or hear about upcoming ones!", "EWD_FEUP");?> </li></ul><?php }  ?>
+					<?php } else { ?><ul><li><?php _e("Thanks for upgrading to version 2.4.8!", "EWD_FEUP"); ?><br> <a href='http://www.facebook.com/EtoileWebDesign'><?php _e("Follow us on Facebook", "EWD_FEUP"); ?></a> <?php _e("to suggest new features or hear about upcoming ones!", "EWD_FEUP");?> </li></ul><?php }  ?>
 					
 					<?php /* if (get_option("EWD_FEUP_Install_Flag") == "Yes") { ?><ul><li><?php _e("Thanks for installing Front-End Only Users.", "EWD_FEUP"); ?><br> <a href='http://www.facebook.com/EtoileWebDesign'><?php _e("Follow us on Facebook", "EWD_FEUP"); ?></a> <?php _e("to suggest new features or hear about upcoming ones!", "EWD_FEUP");?>  </li></ul>
 					<?php } else { ?><ul><li><?php _e("Thanks for upgrading to version 2.0.0!", "EWD_FEUP"); ?><br> <a href='http://wordpress.org/support/view/plugin-reviews/ultimate-product-catalogue'><?php _e("Please rate our plugin", "EWD_FEUP"); ?></a> <?php _e("if you find the Ultimate Product Catalogue Plugin useful!", "EWD_FEUP");?> </li></ul><?php } */ ?>
@@ -68,6 +68,7 @@ update_option('EWD_FEUP_Install_Flag', "No");
 	<div class="handlediv" title="Click to toggle"></div><h3 class='hndle'><span><?php _e("Support Options:", 'EWD_FEUP') ?></span></h3>
 	<div class="inside">
 		<ul>
+			<li>Need help with shortcode attributes? Type the shortcode name and "help" (ex: [login help) in any page to get a list of all shortcode attributes.</li>
 			<li><a href='https://www.youtube.com/channel/UCZPuaoetCJB1vZOmpnMxJNw/feed'>Our YouTube channel with getting started and plugin feature tutorials.</a></li>
 			<li><a href='http://www.etoilewebdesign.com/front-end-users-faq/'>Plugin in-depth FAQ page.</a></li>
 			<li><a href='https://wordpress.org/support/plugin/front-end-only-users'>WordPress support forum.</a></li>

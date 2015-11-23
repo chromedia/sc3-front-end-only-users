@@ -7,7 +7,7 @@ Author: Etoile Web Design
 Author URI: http://www.EtoileWebDesign.com/
 Terms and Conditions: http://www.etoilewebdesign.com/plugin-terms-and-conditions/
 Text Domain: EWD_FEUP
-Version: 2.4.4
+Version: 2.4.8
 */
 
 global $EWD_FEUP_db_version;
@@ -102,6 +102,8 @@ add_filter("plugin_action_links_$plugin", 'EWD_FEUP_plugin_settings_link' );
 //add_filter( 'query_vars', 'add_query_vars_filter' );
 
 function Add_EWD_FEUP_Scripts() {
+	wp_enqueue_script('ewd-feup-shortcode-helper', plugin_dir_url(__FILE__) . '/js/ShortcodeHelper.js');
+
 	if (isset($_GET['page']) && $_GET['page'] == 'EWD-FEUP-options') {
 		$url_one = plugins_url("front-end-only-users/js/Admin.js");
 		$url_two = plugins_url("front-end-only-users/js/sorttable.js");
