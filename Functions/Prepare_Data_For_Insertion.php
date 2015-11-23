@@ -79,8 +79,8 @@ function Add_Edit_User() {
 	if ($_POST['action'] == "Add_User" or $_POST['ewd-feup-action'] == "register") {
 		if (empty($_POST['User_Password'])) { $user_update = array("Message_Type" => "Error", "Message" => __("The password entered was too short.", "EWD_FEUP")); return $user_update;}
 		$wpdb->get_results($wpdb->prepare("SELECT User_ID FROM $ewd_feup_user_table_name WHERE Username='%s'", $_POST['Username']));
-		if ($wpdb->num_rows > 0) {$user_update = array("Message_Type" => "Error", "Message" => __("There is already a user with that Username, please select a different one.", "EWD_FEUP")); return $user_update;}
-		if (strlen($_POST['Username']) < 3) {$user_update = array("Message_Type" => "Error", "Message" => __("Username must be at least 3 characters.", "EWD_FEUP")); return $user_update;}
+		if ($wpdb->num_rows > 0) {$user_update = array("Message_Type" => "Error", "Message" => __("There is already a user with that e-mail address, please select a different one.", "EWD_FEUP")); return $user_update;}
+		//if (strlen($_POST['Username']) < 3) {$user_update = array("Message_Type" => "Error", "Message" => __("Username must be at least 3 characters.", "EWD_FEUP")); return $user_update;}
 	}
 
 	if ($_POST['ewd-feup-action'] != "edit-account") {
@@ -105,6 +105,12 @@ function Add_Edit_User() {
 			}
 		}
 	}
+	else {
+	    $newUser = $wpdb->get_row($wpdb->prepare("SELECT User_ID FROM $ewd_feup_user_table_name WHERE Username='%s'", $_POST['Username']));
+	    if ($newUser && $UserCookie['User_ID'] != $newUser->User_ID) {
+	        $error = __("There is already an account with that Email. Please select a different one.", "EWD_FEUP");
+	    }
+	}
 
 	if (!isset($error) and $Validate_Captcha == "Yes") {
 		/* Pass the data to the appropriate function in Update_Admin_Databases.php to create the user */
@@ -123,7 +129,7 @@ function Add_Edit_User() {
 				$user_update = Add_EWD_FEUP_User_Field($Field['Field_ID'], $User_ID, $Field['Field_Name'], $Field['Field_Value'], $date);
 			}
 			if ($_POST['ewd-feup-action'] == "register") {
-				$user_update = __("Your account has been succesfully created.", "EWD_FEUP");
+				$user_update = __("Your account has been succesfully created. Please check your email to confirm account.", "EWD_FEUP");
 				if ($Sign_Up_Email == "Yes") {EWD_FEUP_Send_Email($User_Fields, $Additional_Fields_Array, $User_ID);}
 				if ($Admin_Email_On_Registration == "Yes") {EWD_FEUP_Send_Admin_Registration_Email($User_Fields, $Additional_Fields_Array, $User_ID);}
 				if ($Email_Confirmation != "Yes" and $Admin_Approval != "Yes") {
@@ -203,6 +209,8 @@ function EWD_FEUP_Send_Email($User_Fields, $Additional_Fields_Array, $User_ID = 
 	}
 	
 	$headers = array('Content-Type: text/html; charset=UTF-8');
+	$headers.push('From: ' . get_bloginfo('name') . ' <' .$Admin_Email. ">");
+	$headers.push('Reply-To: ' . $Admin_Email);
 	$Mail_Success = wp_mail($User_Email, $Email_Subject, $Message_Body, $headers);
 }
 

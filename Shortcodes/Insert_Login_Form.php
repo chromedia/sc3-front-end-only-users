@@ -64,6 +64,10 @@ function Insert_Login_Form($atts) {
 		$ReturnString .= "<label for='Password' id='ewd-feup-login-password-div' class='ewd-feup-field-label ewd-feup-login-label'>" . __('Password', 'EWD_FEUP') . ": </label>";
 		$ReturnString .= "<input type='password' class='ewd-feup-text-input ewd-feup-login-field' name='User_Password'>";
 		$ReturnString .= "</div>";
+		$ReturnString .= "<div class='pure-control-group' style='margin-bottom: 10px;'>";
+		$ReturnString .= "<label class='ewd-feup-field-label'></label>";
+		$ReturnString .= "<a tabindex='4' style='font-size: 14px;' href='/forgot-password'>Forgot your password?</a>";
+		$ReturnString .= "</div>";
 		$ReturnString .= "<div class='feup-pure-control-group'>";
 		$ReturnString .= "<label for='Submit'></label><input type='submit' class='ewd-feup-submit ewd-feup-login-submit feup-pure-button feup-pure-button-primary' name='Login_Submit' value='" . $submit_text . "'>";
 		$ReturnString .= "</div>";
