@@ -152,9 +152,9 @@ function Forgot_Password() {
 		
 		$message = __("Greetings from ", 'EWD_FEUP').get_bloginfo('name')."\n\n";
 		$message .= __("Somebody requested a password reset for you. If this wasn't you, you can ignore this mail.", 'EWD_FEUP')."\n\n";
-		$message .= __("If you want to reset the password, please visit ", 'EWD_FEUP').site_url()."/".$_POST['ewd-feup-reset-email-url']."?add=". urlencode($User_Email)."&rc=".$resetcode."\n";
-		$message .= __("If the link above doesn't work, go to ", 'EWD_FEUP').site_url()."/".$_POST['ewd-feup-reset-email-url'].__(" and enter your email address and the following code:", 'EWD_FEUP')."\n";
-		$message .= $resetcode;
+		$message .= __("If you want to reset the password, please visit ", 'EWD_FEUP').site_url()."/".$_POST['ewd-feup-reset-email-url']."&add=". urlencode($User_Email)."&rc=".$resetcode."\n";
+		//$message .= __("If the link above doesn't work, go to ", 'EWD_FEUP').site_url()."/".$_POST['ewd-feup-reset-email-url'].__(" and enter your email address and the following code:", 'EWD_FEUP')."\n";
+		//$message .= $resetcode;
 		//$feup_success = true;
 		//return($User_Email."\n". $subject."\n". $message."\n". $headers);
 		
@@ -169,7 +169,7 @@ function Forgot_Password() {
 	{
 		//return success message even though operation failed - we don't want 'them' to know which
 		// email addresses are used
-		return __("For completing the password reset procedure, please follow the instructions in your email.", 'EWD_FEUP');
+		return __("Your email doesn't exist. Click <a href='/sign-up'>here</a> to signup.", 'EWD_FEUP');
 	}
 }
 
@@ -225,7 +225,7 @@ function Confirm_Forgot_Password() {
 							$feup_success = true;
 
 							//return success message
-							return __("Your password has been successfully changed. You can log in using your new password now.", 'EWD_FEUP');
+							return __("Your password has been successfully changed. You may now <a href='/login'>log in</a> using your new password.", 'EWD_FEUP');
 						} else {
 							return __("The password reset code you entered was wrong. You need to get a new one before using this function again.", 'EWD_FEUP');
 						}
@@ -265,7 +265,7 @@ function ConfirmUserEmail() {
 
 	$User_ID = $_GET['User_ID'];
 	$Email_Address = $_GET['ConfirmEmail'];
-	$Confirmation_Code = $_GET['Confirmation_Code'];
+	$Confirmation_Code = $_GET['ConfirmationCode'];
 
 	$Retrieved_User_ID = $wpdb->get_row($wpdb->prepare("SELECT User_ID FROM $ewd_feup_user_table_name WHERE User_ID=%d AND User_Confirmation_Code=%s", $User_ID, $Confirmation_Code));
 	if (isset($Retrieved_User_ID->User_ID)) {
