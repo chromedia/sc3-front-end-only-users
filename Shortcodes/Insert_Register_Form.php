@@ -155,7 +155,7 @@ function Insert_Register_Form($atts) {
 	}
 	else {
 		$ReturnString = "<div class='ewd-feup-email-confirmation'>";
-		if ($ConfirmationSuccess == "Yes") {$ReturnString .= __("Thanks for confirming your e-mail address! You may <a href='/login'>login</a> now.", 'EWD_FEUP');}
+		if ($ConfirmationSuccess == "Yes") {$ReturnString .= __("Thanks for confirming your e-mail address!", 'EWD_FEUP');}
 		if ($ConfirmationSuccess == "No") {$ReturnString .= __("The confirmation number provided was incorrect. Please contact the site administrator for assistance.", 'EWD_FEUP');}
 		$ReturnString .= "</div>";
 	}
